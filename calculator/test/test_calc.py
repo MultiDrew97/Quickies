@@ -1,13 +1,21 @@
 from calculator.calc import *
 
 def test_addition():
-	assert addition(1, 1) == 2
+	num1 = 1
+	num2 = 1
+	assert addition(num1, num2) == num1 + num2
 
 def test_subtraction():
-	assert subtraction(1, 1) == 0
+	num1 = 1
+	num2 = 1
+	assert subtraction(num1, num2) == num1 - num2
 
 def test_multiplication():
-	assert multiplication(2, 2) == 4
+	num1 = 2
+	num2 = 2
+	assert multiplication(num1, num2) == num1 * num2
 
 def test_division():
-	assert division(12, 2) == 6
+	num1 = 12
+	num2 = 2
+	assert division(num1, num2) == num1 / num2

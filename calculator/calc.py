@@ -8,9 +8,12 @@ def subtraction(num1, num2):
 	return addition(num1, neg(num2))
 
 def multiplication(num1, num2):
+	idx = 1
 	product = 0
-	for _ in range(num2):
+	while (idx < num2):
+	# for _ in range(num2):
 		product += addition(num1, num1)
+		idx += 1
 
 	return product
 
