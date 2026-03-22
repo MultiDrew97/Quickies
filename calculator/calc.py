@@ -24,27 +24,28 @@ from operator import neg
  """
 
 """ The operation that will keep addition consistent across functions """
-def addition(num1, num2):
+def addition(left, right):
 	# The heart of the operation
-	return num1 + num2
+	return left + right
 
 """ The base subtraction function """
-def subtraction(num1, num2):
-	return addition(num1, neg(num2))
+def subtraction(left, right):
+	return addition(left, neg(right))
 
-def multiplication(num1, num2):
+def multiplication(left, right):
 	def is_negative_result():
-		return (num1 < 0 and num2 > 0) or (num1 > 0 and num2 < 0)
+		return (left < 0 and right > 0) or (left > 0 and right < 0)
 
 	product = 0
 
-	for _ in range(abs(num2)):
-		product = addition(product, abs(num1))
+	for _ in range(abs(right)):
+		product = addition(product, abs(left))
 
 	return neg(product) if is_negative_result() else abs(product)
 
 def exponential(base, exp):
 	def is_negative_result():
+		# Check for negative result rules within the function
 		return exp % 2 != 0 and base < 0
 
 	# Any number to the power of 0 is 1
@@ -55,15 +56,16 @@ def exponential(base, exp):
 	if exp == 1:
 		return base
 
-	#Ensure
 	val = abs(base)
 	for _ in range(subtraction(abs(exp), 1)):
+			# base * base * base * base
 			val = multiplication(val, abs(base))
 
 	return neg(val) if is_negative_result() else val
 
-def division(numerator, denominator, max_sig_figs=15):
+def division(numerator, denominator, sig_figs=16):
 	def is_negative_result():
+		# Check for negative result rules within the function
 		return ((numerator < 0 and denominator > 0) or (numerator > 0 and denominator < 0) or (denominator == 0 and numerator < 0)) and numerator != 0
 
 	def count(start):
@@ -75,26 +77,31 @@ def division(numerator, denominator, max_sig_figs=15):
 			v = addition(v, 1)
 		return v
 
+	# Will need to research further, but as far as I know, 0 / 0 is a true undeterminate (Black Hole... Wooooooooooo!)
 	if numerator == 0 and denominator == 0:
 		return None
+
+	# Since we now that they aren't 0 together, now we determine which one
 
 	if numerator == 0:
 		return 0
 
+	# Just got to make sure it's not dividing by 0
 	if denominator == 0:
+		# Will improve this by using a ternary to return either of these if it's 0 to have a cleaner check
 		return neg(inf) if is_negative_result() else inf
 
 	answer = 0
-	fig_position = 0
+	dec_position = 0
 	curr = abs(numerator)
 
-	while (curr > 0 and fig_position <= max_sig_figs):
+	while (curr > 0 and dec_position <= sig_figs):
 		#  Continue as long as answer isn't found and we havne't reached desired sigfigs
 		if subtraction(curr, abs(denominator)) < 0:
 			# All numbers to the right of the decimal
 
 			# 10^x place
-			fig_position = addition(fig_position, 1)
+			dec_position = addition(dec_position, 1)
 
 			# Update curr to be adjusted for the current place
 			curr = multiplication(curr, 10)
@@ -106,8 +113,8 @@ def division(numerator, denominator, max_sig_figs=15):
 			curr = subtraction(curr, multiplication(abs(denominator), val))
 
 			# The actual representation of the number found that's being added to the number
-			adding = val / exponential(10, fig_position)
-			print(f"Current Answer: {answer}\n1/{pow(10, fig_position)} place: {val}\nRemainder: {curr}\nAdding As: {adding}\n")
+			adding = val / exponential(10, dec_position)
+			print(f"Current Answer: {answer}\n1/{pow(10, dec_position)} place: {val}\nRemainder: {curr}\nAdding As: {adding}\n")
 			# Update the number with the newly found 10^x place value
 			answer = addition(answer, adding)
 		else:
