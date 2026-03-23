@@ -6,5 +6,5 @@ This is just a repo for publishing public facing projects to better display my g
 
 ### Current Projects:
 
-- [Binomial Distribution Calculator](./binomial)
-- [Worlds Most Useless Calculator](./calculator)
+- [Statistics Functions](./statistics)
+- [Worlds Most Useless Calculator](./wdc)
