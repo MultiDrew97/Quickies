@@ -2,12 +2,10 @@ from pytest import raises, approx
 from math import floor
 from random import randint, random
 
+from statistics.test import min_sample_size, max_sample_size
 from statistics.binomial import *
 
-min_size=10
-max_size = 100
-
-size = randint(min_size, max_size)
+size = randint(min_sample_size, max_sample_size)
 success = randint(0, size)
 prob_success = round(random(), 2)
 
@@ -28,7 +26,7 @@ def test_binomial():
 
 	# Check for consistent "identity" of binomial distribution
 	for _ in range(25):
-		t_size = randint(min_size, max_size)
+		t_size = randint(min_sample_size, max_sample_size)
 		t_succ = randint(0, t_size)
 		t_prob = random()
 		lower, equal, upper = less_than_binomial(t_size, t_succ, t_prob), binomial(t_size, t_succ, t_prob), greater_than_binomial(t_size, t_succ, t_prob)
