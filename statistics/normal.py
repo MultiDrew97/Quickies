@@ -8,6 +8,12 @@ def Mu(size, prob):
 	return size * prob
 
 def Sigma(mu, prob):
+	if (mu < 0):
+		raise Exception("Mu was less than 0")
+
+	if (prob > 1 or prob < 0):
+		raise Exception("Probability should be a non-negative value and 0 <= p <= 1")
+
 	return (mu * (1 - prob)) ** (1/2)
 
 def normal(size, success, prob_success):

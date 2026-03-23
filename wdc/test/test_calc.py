@@ -1,8 +1,8 @@
 from random import randint
 from pytest import approx
 
-from calculator.calc import *
-from calculator.test import appropriate_indeterminate, min_iterations, max_iterations
+from wdc.base import *
+from wdc.test import appropriate_indeterminate, min_iterations, max_iterations
 
 def test_addition():
 	for _ in range(randint(min_iterations, max_iterations)):
