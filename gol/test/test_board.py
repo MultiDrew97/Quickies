@@ -29,3 +29,19 @@ def test_board_toggle():
 	assert board.get_state(row, col) == False
 	board.toggle_space(row, col)
 	assert board.get_state(row, col) == True
+
+def test_board_clear():
+	rows = getRow()
+	cols = getCol()
+	board = Gameboard(rows, cols)
+
+	for r in range(rows):
+		for c in range(cols):
+			board.toggle_space(r, c)
+			assert board.get_state(r, c) == True
+
+	board._clear_table_()
+
+	for r in range(rows):
+		for c in range(cols):
+			assert board.get_state(r, c) == False
