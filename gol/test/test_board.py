@@ -11,11 +11,11 @@ def test_board_creation():
 		Gameboard(1, 0) # No columns
 		Gameboard(1,-1) # Negative columns
 
-	Gameboard(getRow(), getCol())
+	Gameboard(gen_row(), gen_col())
 
 def test_board_toggle():
-	rows = getRow()
-	cols = getCol()
+	rows = gen_row()
+	cols = gen_col()
 	board = Gameboard(rows, cols)
 
 	with raises(Exception):
@@ -31,8 +31,8 @@ def test_board_toggle():
 	assert board.get_state(row, col) == True
 
 def test_board_clear():
-	rows = getRow()
-	cols = getCol()
+	rows = gen_row()
+	cols = gen_col()
 	board = Gameboard(rows, cols)
 
 	for r in range(rows):
@@ -40,7 +40,7 @@ def test_board_clear():
 			board.toggle_space(r, c)
 			assert board.get_state(r, c) == True
 
-	board._clear_table_()
+	board.clear_table()
 
 	for r in range(rows):
 		for c in range(cols):

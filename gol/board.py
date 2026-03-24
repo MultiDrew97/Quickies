@@ -9,12 +9,12 @@ class Gameboard():
 			raise Exception("Invalid column count")
 
 		self.__rows__, self.__cols__ = rows, cols
-		self._clear_table_()
+		self.clear_table()
 		print("[DEBUG] Current Board:")
 		print(self.board)
 		print("Your oyster is ready")
 
-	def _clear_table_(self):
+	def clear_table(self):
 		print("Sending the nuke...")
 		self.board = [[False for _ in range(self.__cols__)] for _ in range(self.__rows__)]
 		print("You have wiped out the population")
