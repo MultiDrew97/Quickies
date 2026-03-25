@@ -1,46 +1,49 @@
 from random import randint
 from pytest import raises
 
+from gol import Status
 from gol.test import *
 from gol.world import World
 
-def test_board_creation():
+def test_world_creation():
 	with raises(Exception):
-		World(0, 1) # No rows
-		World(-1,1) # Negative rows
-		World(1, 0) # No columns
-		World(1,-1) # Negative columns
+		World(0, 1) # No x direction
+		World(-1,1) # No 'negative' yet, may add later
+		World(1, 0) # No y direction
+		World(1,-1) # No 'negative' yet, may add later
 
-	World(gen_row(), gen_col())
+	for _ in range(randint(min_iterations, max_iterations)):
+		World(gen_x_limit(), gen_y_limit())
 
-def test_board_toggle():
-	rows = gen_row()
-	cols = gen_col()
-	board = World(rows, cols)
+def test_entity_retrieval():
+	x_limit, y_limit = gen_x_limit(), gen_y_limit()
+	world = World(x_limit, y_limit)
 
 	with raises(Exception):
-		board.toggle_space(rows + 1, randint(0, cols)) # Bad row
-		board.toggle_space(-1, randint(0, cols)) # Bad row
-		board.toggle_space(randint(0, rows), -1) # Bad col
-		board.toggle_space(randint(0, rows), cols + 1) # Bad col
+		world.get_entity(x_limit + 1, randint(0, y_limit)) # Bad row
+		world.get_entity(-1, randint(0, y_limit)) # Bad row
+		world.get_entity(randint(0, x_limit), -1) # Bad col
+		world.get_entity(randint(0, x_limit), y_limit + 1) # Bad col
 
-	row = randint(0, rows)
-	col = randint(0, cols)
-	assert board.is_alive(row, col) == False
-	board.toggle_space(row, col)
-	assert board.is_alive(row, col) == True
+	print(f"World Bounds: {x_limit}x{y_limit}")
+	for _ in range(randint(min_iterations, max_iterations)):
+		x, y = randint(0, x_limit - 1), randint(0, y_limit - 1)
+		print(f"Retrieving Entity: ({x}, {y})...")
+		assert world.get_entity(x, y) != None
 
-def test_board_clear():
-	rows, cols = gen_row(), gen_col()
-	world = World(rows, cols)
+def test_world_wipe():
+	x_limit, y_limit = gen_x_limit(), gen_y_limit()
+	world = World(x_limit, y_limit)
 
-	for r in range(rows):
-		for c in range(cols):
-			world.toggle_space(r, c)
-			assert world.is_alive(r, c) == True
+	for x in range(x_limit):
+		for y in range(y_limit):
+			print(f"Retrieving Entity: ({x}, {y})...")
+			world.get_entity(x, y).kill()
+			assert not world.get_entity(x, y).is_alive()
 
 	world.flush()
 
-	for r in range(rows):
-		for c in range(cols):
-			assert world.is_alive(r, c) == False
+	for x in range(x_limit):
+		for y in range(y_limit):
+			print(f"Retrieving Entity: ({x}, {y})...")
+			assert world.get_entity(x, y).is_alive()

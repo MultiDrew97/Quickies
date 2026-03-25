@@ -1,3 +1,6 @@
+from gol.entity import Entity
+
+
 class World():
 	# TODO: Expand for 3D
 	def __init__(self, x: int, y: int) -> None:
@@ -15,19 +18,17 @@ class World():
 
 	def flush(self):
 		print("Sending the flood...")
-		self.__space__ = [[False for _ in range(self.__x_limit__)] for _ in range(self.__y_limit__)]
+		self.__space__ = [[Entity() for _ in range(self.__x_limit__)] for _ in range(self.__y_limit__)]
+		print(self.__space__)
 		print("You have wiped out the population")
 
-	def toggle_space(self, x: int, y: int) -> None:
+	def get_entity(self, x: int, y: int) -> Entity:
 		if x < 0 or x > self.__x_limit__:
 			raise Exception("x is invalid")
 
 		if y < 0 or y > self.__y_limit__:
 			raise Exception("y is invalid")
 
-		self.__space__[x][y] = not self.__space__[x][y]
-
-	def is_alive(self, x: int, y: int) -> bool:
-		return self.__space__[x][y]
+		return self.__space__[y][x]
 
 
