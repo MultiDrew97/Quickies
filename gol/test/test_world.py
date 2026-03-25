@@ -2,21 +2,21 @@ from random import randint
 from pytest import raises
 
 from gol.test import *
-from gol.board import Gameboard
+from gol.world import World
 
 def test_board_creation():
 	with raises(Exception):
-		Gameboard(0, 1) # No rows
-		Gameboard(-1,1) # Negative rows
-		Gameboard(1, 0) # No columns
-		Gameboard(1,-1) # Negative columns
+		World(0, 1) # No rows
+		World(-1,1) # Negative rows
+		World(1, 0) # No columns
+		World(1,-1) # Negative columns
 
-	Gameboard(gen_row(), gen_col())
+	World(gen_row(), gen_col())
 
 def test_board_toggle():
 	rows = gen_row()
 	cols = gen_col()
-	board = Gameboard(rows, cols)
+	board = World(rows, cols)
 
 	with raises(Exception):
 		board.toggle_space(rows + 1, randint(0, cols)) # Bad row
@@ -26,22 +26,21 @@ def test_board_toggle():
 
 	row = randint(0, rows)
 	col = randint(0, cols)
-	assert board.get_state(row, col) == False
+	assert board.is_alive(row, col) == False
 	board.toggle_space(row, col)
-	assert board.get_state(row, col) == True
+	assert board.is_alive(row, col) == True
 
 def test_board_clear():
-	rows = gen_row()
-	cols = gen_col()
-	board = Gameboard(rows, cols)
+	rows, cols = gen_row(), gen_col()
+	world = World(rows, cols)
 
 	for r in range(rows):
 		for c in range(cols):
-			board.toggle_space(r, c)
-			assert board.get_state(r, c) == True
+			world.toggle_space(r, c)
+			assert world.is_alive(r, c) == True
 
-	board.clear_table()
+	world.flush()
 
 	for r in range(rows):
 		for c in range(cols):
-			assert board.get_state(r, c) == False
+			assert world.is_alive(r, c) == False
