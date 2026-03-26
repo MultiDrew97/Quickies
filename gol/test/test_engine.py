@@ -1,4 +1,4 @@
-from gol.engine import Universe, universe_dimensions
+from gol.time import Universe, universe_dimensions
 from gol.world import World
 
 def test_big_bang() -> None:

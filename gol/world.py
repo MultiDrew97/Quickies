@@ -4,7 +4,7 @@ from typing import Generator
 import pygame as pyg
 from gol import Point, VisualComponent
 from gol.entity import Entity
-from gol.engine import block_size
+from gol.time import block_size
 
 class World(VisualComponent):
 	""" The definitions of the space that the entities live in """
