@@ -31,7 +31,7 @@ def test_entity_retrieval():
 	for _ in range(randint(min_iterations, max_iterations)):
 		x, y = randint(0, x_limit - 1), randint(0, y_limit - 1)
 		print(f"Retrieving Entity: ({x}, {y})...")
-		assert world.get_entity(Point(x, y)) == None
+		assert world.get_entity(Point(x, y)) is None
 
 def test_world_wipe():
 	x_limit, y_limit = gen_x_limit(), gen_y_limit()
@@ -39,10 +39,10 @@ def test_world_wipe():
 	world.add_entity(Entity(position=Point(0, 0)))
 
 	entity = world.get_entity(Point(0, 0))
-	assert entity != None
+	assert entity is not None
 	assert entity.is_alive()
 
 	world.flush()
 
 	entity = world.get_entity(Point(0, 0))
-	assert entity == None
+	assert entity is None

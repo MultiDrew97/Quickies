@@ -23,7 +23,7 @@ class World(VisualComponent):
 
 	def flush(self):
 		""" Clear the space to a clean slate """
-		print("Sending the flood...")
+		print("Sending the flood 🌊...")
 		self.__entities__.clear()
 		# self.__entities = [[Entity() for _ in range(self.__x_limit__)] for _ in range(self.__y_limit__)]
 		# print(self.__entities)
@@ -48,7 +48,9 @@ class World(VisualComponent):
 
 	def add_entity(self, entity: Entity) -> int:
 		""" Add an entity to the space if one does not already occupy that space """
-		if next((e for e in self.__entities__ if e.position == entity.position), None) != None:
+
+		print(f"[INFO] Placing a new entity at {entity.position}")
+		if next((e for e in self.__entities__ if e.position == entity.position), None) is not None:
 			raise Exception(f"Entity already present at location {entity.position}")
 
 		self.__entities__.append(entity)
