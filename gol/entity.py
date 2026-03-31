@@ -7,12 +7,12 @@ class Entity(VisualComponent):
 
 	def __init__(self, name="New Entity", position: Point = Point(0, 0)):
 		super().__init__()
-		print(f"{name} is gestating...")
+		print(f"[INFO] {name} is gestating...")
 		self.__color__ = pyg.Color(255,255,255)
 		self.__name__ = name
 		self.__status__ = Status.ALIVE
 		self.position = position
-		print(f"{name} has been born at {position} 🎉")
+		print(f"[INFO] {name} has been born at {position} 🎉")
 
 	def draw(self, display: pyg.Surface):
 		if not self.is_alive():
@@ -30,7 +30,7 @@ class Entity(VisualComponent):
 		return True
 
 	def kill(self) -> bool:
-		print(f"Attempting to kill {self.__name__}...")
+		print(f"[INFO] Attempting to kill {self.__name__}...")
 		if not self.can_kill():
 			raise Exception(f"{self.__name__} cannot die 👎🏾")
 
@@ -42,7 +42,7 @@ class Entity(VisualComponent):
 		return True
 
 	def revive(self) -> bool:
-		print(f"Attempting to revive {self.__name__}")
+		print(f"[INFO] Attempting to revive {self.__name__}")
 		if not self.can_revive():
 			raise Exception(f"{self.__name__} cannot be revived. GG brother 😅")
 
