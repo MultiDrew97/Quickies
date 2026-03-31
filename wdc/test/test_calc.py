@@ -5,6 +5,7 @@ from wdc.base import *
 from wdc.test import appropriate_indeterminate, min_iterations, max_iterations
 
 def test_addition():
+	assert approx(addition(1.5, 1.5)) == 1.5 + 1.5
 	for _ in range(randint(min_iterations, max_iterations)):
 		num1 = randint(-100, 100)
 		num2 = randint(-100, 100)
@@ -12,6 +13,7 @@ def test_addition():
 		print(num1, num2, sep=" + ", end=f" == {valid}\n")
 		assert approx(addition(num1, num1)) == 2 * num1
 		assert approx(addition(num1, num2)) == valid
+
 
 def test_subtraction():
 	for _ in range(randint(min_iterations, max_iterations)):
@@ -21,8 +23,10 @@ def test_subtraction():
 		print(num1, num2, sep=" - ", end=f" == {valid}\n")
 		assert approx(subtraction(num1, num1)) == 0
 		assert approx(subtraction(num1, num2)) == valid
+	assert approx(subtraction(1.5, 1.5)) == 1.5 - 1.5
 
 def test_multiplication():
+	assert approx(multiplication(1.5, 1.5)) == 1.5 * 1.5
 	for _ in range(randint(min_iterations, max_iterations)):
 		num1 = randint(-100, 100)
 		num2 = randint(-100, 100)
@@ -34,6 +38,7 @@ def test_multiplication():
 		assert approx(multiplication(num1, num2)) == valid
 
 def test_exponents():
+	assert approx(multiplication(1.5, 1.5)) == 1.5 * 1.5
 	for _ in range(randint(min_iterations, max_iterations)):
 		num1 = randint(-100, 100)
 		num2 = randint(2, 100)
@@ -47,6 +52,7 @@ def test_exponents():
 def test_division():
 	# valid = 66 / 68
 	# assert division(66, 68) == valid
+	assert approx(division(1.5, 1.25)) == 1.5 / 1.25
 	solo = randint(1, 1000)
 	assert approx(division(solo, solo)) == 1
 	assert approx(division(solo, neg(solo))) == -1
@@ -60,3 +66,4 @@ def test_division():
 
 		print(num1, num2, sep=" / ", end=f" == {valid}\n")
 		assert approx(division(num1, num2)) == valid
+
