@@ -49,19 +49,30 @@ class Universe:
 	def __handle_events__(self):
 		""" Handle any events that have arisen since the last tick of the game """
 		for e in pyg.event.get():
-			# print(f"[DEBUG] Event: {e}")
 			if e.type == pyg.QUIT or (e.type == pyg.KEYDOWN and e.key == pyg.K_q):
 				self.__running__ = False # Stop the game
 			elif e.type == pyg.WINDOWHIDDEN or (e.type == pyg.KEYDOWN and e.key == pyg.K_p):
-				self.__pause_game__() if not self.__paused__ else self.__unpause_game__() # Pause and unpause the game
+				# Pause and unpause the game
+				self.__pause_game__() if not self.__paused__ else self.__unpause_game__()
 			elif e.type == pyg.KEYDOWN and e.key == pyg.K_n:
 				if not self.__world__:
-					self.__world__ = World(universe_dimensions) # Start a fresh world if one doen't already exist
+					# Start a fresh world if one doen't already exist
+					self.__world__ = World(universe_dimensions)
 				else:
-					self.__world__.flush() # Wipe the world to start fresh if it already exists
+					# Wipe the world to start fresh if it already exists
+					self.__world__.flush()
 			elif e.type == pyg.MOUSEBUTTONDOWN:
-				mouse_pos = pyg.mouse.get_pos()
-				self.__add_entity__(Entity(position=Point(mouse_pos[0] // block_size, mouse_pos[1] // block_size)))
+				if not self.__world__:
+					continue # Don't place an entity if the world isn't initialized
+
+				mouse_pos_x, mouse_pos_y = pyg.mouse.get_pos()
+				pos = Point(mouse_pos_x // block_size, mouse_pos_y // block_size)
+				if self.__world__.get_entity(pos) is not None:
+					print(f"[INFO] Removing entity at {pos}...")
+					self.__world__.remove_entity(pos) # Remove the entity if one already exists at that location
+				else:
+					print(f"[INFO] Placing a new entity at {pos}...")
+					self.__add_entity__(Entity(position=pos))
 
 	def __entropy__(self):
 		""" Change the state of the world and its entities according to the rules of the game """

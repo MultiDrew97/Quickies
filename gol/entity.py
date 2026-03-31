@@ -12,6 +12,7 @@ class Entity(VisualComponent):
 		self.__name__ = name
 		self.__status__ = Status.ALIVE
 		self.position = position
+		print(f"{name} has been born at {position} 🎉")
 
 	def draw(self, display: pyg.Surface):
 		if not self.is_alive():
