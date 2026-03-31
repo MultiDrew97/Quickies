@@ -11,7 +11,7 @@ universe_dimensions: Point = Point(x=600, y=600)
 
 class Universe:
 	__bg_color__ = pyg.Color(255,255,255)
-	__display__: pyg.Surface
+	__display__: pyg.Surface | None = None
 	__clock__: pyg.time.Clock
 	__world__: World | None = None
 	__paused__ = True
@@ -36,6 +36,9 @@ class Universe:
 	def __draw_space__(self):
 		""" Draw the world and all of its entities onto the canvas """
 		# if self.__paused__: return
+		if not self.__display__:
+			return
+
 		self.__world__.draw(self.__display__) if self.__world__ else None
 
 	def __add_entity__(self, entity: Entity):
@@ -84,10 +87,16 @@ class Universe:
 
 	def __wipe_display__(self):
 		""" Wipe the display to be redrawn on the next render """
+		if not self.__display__:
+			return
+
 		self.__display__.fill(self.__bg_color__)
 
 	def __draw_cursor__(self):
 		""" Draw the cursor on top of the game space to indicate where the next entity will be placed """
+		if not self.__display__:
+			return
+
 		mouse_pos = pyg.mouse.get_pos()
 
 		if mouse_pos[0] < 0 or mouse_pos[0] > universe_dimensions.x or mouse_pos[1] < 0 or mouse_pos[1] > universe_dimensions.y:

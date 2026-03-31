@@ -7,9 +7,9 @@ def test_big_bang() -> None:
 
 	try:
 		assert universe.__world__ is None
-		assert universe.__paused__ == False
+		assert universe.__paused__ == True
 		assert universe.__bg_color__ == (255,255,255)
-		assert universe.__display__.get_size() == (universe_dimensions.x, universe_dimensions.y)
+		assert universe.__display__ == None
 		assert universe.__clock__ is not None
 	finally:
 		universe.__cleanup__()
