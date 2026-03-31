@@ -1,0 +1,16 @@
+{
+	// See https://go.microsoft.com/fwlink/?LinkId=733558
+	// for the documentation about the tasks.json format
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Play Game",
+			"detail": "Run the GOL package using the Virtual Environment version of python",
+			"type": "shell",
+			"command": ".venv/bin/python3 -m gol.entry",
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}
+		}
+	]
+}
