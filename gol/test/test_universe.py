@@ -1,14 +1,29 @@
 from gol.test import min_iterations
-from gol.universe import Universe
+from gol.universe import Universe, universe_dimensions
+from gol.world import World
 
-def test_start_universe():
-	multiverse = [Universe() for _ in range(min_iterations)]
-	assert len(multiverse) == min_iterations
+def test_big_bang() -> None:
+	universe = Universe()
 
-def test_tick():
-	reality = Universe()
-	start_age = reality.age
-	reality.tick()
+	try:
+		assert universe.__world__ is None
+		assert universe.__paused__ == False
+		assert universe.__bg_color__ == (255,255,255)
+		assert universe.__display__.get_size() == (universe_dimensions.x, universe_dimensions.y)
+		assert universe.__clock__ is not None
+	finally:
+		universe.__cleanup__()
 
-	assert not reality.__space__.get_entity(1, 1).is_alive()
-	assert reality.age == start_age + 1
+def test_space_render() -> None:
+	universe = Universe()
+
+	try:
+		assert universe.__world__ is None
+		universe.__draw_space__() # Shouldn't render anything since the world is not initialized
+	finally:
+		universe.__cleanup__()
+
+	try:
+		universe.__world__ = World(universe_dimensions) # Initialize the world
+	finally:
+		universe.__cleanup__()

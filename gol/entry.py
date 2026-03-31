@@ -1,4 +1,4 @@
-from gol.time import Universe
+from gol.universe import Universe
 
 def __main__() -> None:
 	uni = Universe()

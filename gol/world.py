@@ -1,10 +1,7 @@
-import time
-from typing import Generator
-
 import pygame as pyg
 from gol import Point, VisualComponent
 from gol.entity import Entity
-from gol.time import block_size
+from gol.universe import block_size
 
 class World(VisualComponent):
 	""" The definitions of the space that the entities live in """
@@ -85,55 +82,30 @@ class World(VisualComponent):
 	def step(self):
 		if len(self.__entities__) <= 0: return # Don't do anything if there are no entities in the world
 
-		# for e in self.__entities__:
-		# 	neighbors = self.__get_neighbors__(e.position)
-
-		# 	if neighbors in [2,3]:
-		# 		continue # Survive
-
-		# Handles deaths
-		# self.__entities__ = [e for e in self.__entities__ if self.__get_neighbors__(e.position) in [2,3] and e.is_alive()]
-
-		# # Handles births
-		# for x in range(self.__x_limit__ // block_size):
-		# 	for y in range(self.__y_limit__ // block_size):
-		# 		# print(f"[DEBUG] Checking for births at position: {Point(x, y)}")
-		# 		curr = self.get_entity(loc)
-		# 		if curr:
-		# 			continue # Don't check if one already exists at that location
-
-		# 		loc = Point(x, y)
-		# 		neighbors = self.__get_neighbors__(loc)
-
-		# 		if neighbors != 3:
-		# 			continue # Birth rule not met
-
-		# 		# print(f"[DEBUG] Birth at {loc} with {neighbors} neighbors")
-		# 		self.__entities__.append(Entity(position=loc))
 		deaths = []
 		births = []
 		for x in range(self.__x_limit__ // block_size):
 			for y in range(self.__y_limit__ // block_size):
-				# print(f"[DEBUG] Checking for births at position: {Point(x, y)}")
 				loc = Point(x, y)
 				curr = self.get_entity(loc)
 				neighbors = self.__get_neighbors__(loc)
 
-				# print("[DEBUG] Location: {}, Neighbors: {}, Current: {}".format(loc, neighbors, "Alive" if curr and curr.is_alive() else "None or Dead"))
-				# time.sleep(1) # Sleep for a bit to slow down the output for debugging purposes
 				if curr is not None:
+					# An entity is already at this location
 					if neighbors in [2, 3]:
 						print(f"[DEBUG] Survival at {loc} with {neighbors} neighbors")
-						continue # Survive
+						continue # Entity survives to the next generation
 
 					print(f"[DEBUG] Death at {loc} with {neighbors} neighbors")
 					deaths.append(curr) # Underpopulated or overcrowded, so die if there is an entity there
 				else:
+					# No entity present at this location
 					if neighbors != 3:
 						continue # Birth rule not met
 
 					print(f"[DEBUG] Birth at {loc} with {neighbors} neighbors")
 					births.append(Entity(position=loc))
+
 		# Clean out dead entities
 		self.__entities__ = [e for e in self.__entities__ if e not in deaths]
 
