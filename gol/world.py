@@ -93,17 +93,14 @@ class World(VisualComponent):
 				if curr is not None:
 					# An entity is already at this location
 					if neighbors in [2, 3]:
-						print(f"[DEBUG] Survival at {loc} with {neighbors} neighbors")
 						continue # Entity survives to the next generation
 
-					print(f"[DEBUG] Death at {loc} with {neighbors} neighbors")
 					deaths.append(curr) # Underpopulated or overcrowded, so die if there is an entity there
 				else:
 					# No entity present at this location
 					if neighbors != 3:
 						continue # Birth rule not met
 
-					print(f"[DEBUG] Birth at {loc} with {neighbors} neighbors")
 					births.append(Entity(position=loc))
 
 		# Clean out dead entities

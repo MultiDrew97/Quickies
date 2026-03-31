@@ -18,7 +18,7 @@ class Entity(VisualComponent):
 		if not self.is_alive():
 			return # Don't draw dead entities by default
 
-		pyg.draw.rect(display, color=self.__color__, width=1,rect=pyg.Rect((self.position.x * block_size, self.position.y * block_size), (block_size, block_size)))
+		pyg.draw.rect(display, color=self.__color__,rect=pyg.Rect((self.position.x * block_size, self.position.y * block_size), (block_size, block_size)))
 
 		return super().draw(display)
 
