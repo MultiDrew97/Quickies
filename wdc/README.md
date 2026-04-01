@@ -1,4 +1,4 @@
-# Worlds Most Useless Calculator
+# Worlds Dumbest Calculator
 
 This is based on an idea I had a few years ago and wanted to recreate it again. It's based on the basic fact that most of everything in math is just "fancy" addition. The goal is to break down all high level functions to be nothing but addition. Since the 3 basic functions of all math can be brokwn down in this way, it shouldn't be too hard
 
