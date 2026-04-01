@@ -2,5 +2,5 @@
 **/.DS_Store
 
 # Python Caches
-**/.pytest_cache/
+.pytest_cache/
 **/__pycache__/
