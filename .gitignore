@@ -1,4 +1,6 @@
-# IDE
-.vscode
-.pytest_cache
-.DS_Store
+# OSX
+**/.DS_Store
+
+# Python Caches
+**/.pytest_cache/
+**/__pycache__/
