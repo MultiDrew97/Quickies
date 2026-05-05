@@ -1,0 +1,30 @@
+{
+	"folders": [
+		{
+			"path": ".",
+			"name": "Quickies",
+		},
+	],
+	"settings": {
+		"python-envs.pythonProjects": [
+			{
+				"path": "gol",
+				"envManager": "ms-python.python:venv",
+				"packageManager": "ms-python.python:pip",
+			},
+			{
+				"path": "statistics",
+				"envManager": "ms-python.python:venv",
+				"packageManager": "ms-python.python:pip",
+			},
+			{
+				"path": "wdc",
+				"envManager": "ms-python.python:venv",
+				"packageManager": "ms-python.python:pip",
+			},
+			{
+				"path": "cpu",
+			},
+		],
+	},
+}
