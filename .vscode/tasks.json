@@ -8,6 +8,21 @@
 			"detail": "Run the GOL package using the Virtual Environment version of python",
 			"type": "shell",
 			"command": ".venv/bin/python3 -m gol.entry",
+			"icon": {
+				"id": "game"
+			},
+			"options": {
+				"cwd": "${workspaceFolder}"
+			}
+		},
+		{
+			"label": "Start CPU",
+			"detail": "Run the CPU package using the Virtual Environment version of python",
+			"type": "shell",
+			"command": ".venv/bin/python3 -m cpu.entry",
+			"icon": {
+				"id": "chip"
+			},
 			"options": {
 				"cwd": "${workspaceFolder}"
 			}
