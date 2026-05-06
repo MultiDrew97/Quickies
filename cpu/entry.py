@@ -1,12 +1,13 @@
 from argparse import ArgumentError
 from typing import Any
 
-from cpu import MEMORY_MIN_ADDRESS, MEMORY_MAX_ADDRESS, INS_LDA_IM
+from cpu import INS_HALT, MEMORY_MIN_ADDRESS, MEMORY_MAX_ADDRESS, INS_LDA_IM
 
 # The memory of the system
 mem = {
 	0x0000: INS_LDA_IM[0],
 	0x0001: 0x0001,
+	0x0002: INS_HALT[0]
 }
 
 pc: int = MEMORY_MIN_ADDRESS # Program Counter
@@ -80,6 +81,9 @@ def __main__() -> None:
 				flag_negative = a_reg < 0
 				flag_zero = a_reg == 0
 				pc += INS_LDA_IM[1]
+			case _ if cmd == INS_HALT[0]:
+				print("Halt read. Stopping...")
+				break
 			case _:
 				pc += 1
 		print("Current Accumulator", a_reg)
