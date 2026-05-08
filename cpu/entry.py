@@ -1,93 +1,120 @@
-from argparse import ArgumentError
-from typing import Any
+from cpu import INS_SET, MEMORY_MIN_ADDRESS, MEMORY_MAX_ADDRESS
+from cpu.instr import CPU
 
-from cpu import INS_HALT, MEMORY_MIN_ADDRESS, MEMORY_MAX_ADDRESS, INS_LDA_IM
-
+cpu = CPU()
 # The memory of the system
-mem = {
-	0x0000: INS_LDA_IM[0],
-	0x0001: 0x0001,
-	0x0002: INS_HALT[0]
+# FIXME: Convert to use bytes instead of int
+mem: dict[int, int] = {
+	0x0000: next(key for key, value in INS_SET.items() if value["label"] == "LDA"),
+	0x0001: 0x0001
+	# 0x0002: next(key for key, value in INS_SET.items() if value["label"] == "NOP"),
 }
 
-pc: int = MEMORY_MIN_ADDRESS # Program Counter
-sp: int | None = None # Stack Pointer
-a_reg: int = 0 # Accumulator Register
-x_reg: int | None = None # X Register
-y_reg: int | None = None # Y Register
+reg: dict[str, int] = {
+	"program_counter": MEMORY_MIN_ADDRESS,
+	"stack_pointer": 0x0,
+	"accumulator": 0x0,
+	"x": 0x0,
+	"y": 0x0
+}
 
-flag_carry: bool = False # Carry Flag
-flag_zero: bool = False # Zero Flag
-flag_interrupt_disable: bool = False # Disable interrupt flag
-flag_decimal_mode: bool = False # Decimal mode flag
-flag_break: bool = False # Break flag
-flag_overflow: bool = False # Overflow flag
-flag_negative: bool = False # Negative flag
+flags = {
+	"negative": False,
+	"overflow": False,
+	"break": False,
+	"decimal": False,
+	"interrupt": False,
+	"zero": False,
+	"carry": False,
+}
+
+# pc: int = MEMORY_MIN_ADDRESS # Program Counter
+# sp: int | None = None # Stack Pointer
+# a_reg: int = 0 # Accumulator Register
+# x_reg: int | None = None # X Register
+# y_reg: int | None = None # Y Register
+
+# flag_carry: bool = False # Carry Flag
+# flag_zero: bool = False # Zero Flag
+# flag_interrupt_disable: bool = False # Disable interrupt flag
+# flag_decimal_mode: bool = False # Decimal mode flag
+# flag_break: bool = False # Break flag
+# flag_overflow: bool = False # Overflow flag
+# flag_negative: bool = False # Negative flag
 
 def fetch(addr) -> int | None:
 	if addr > MEMORY_MAX_ADDRESS or addr < MEMORY_MIN_ADDRESS:
 		raise Exception("Address out of bounds")
 
 	try:
-		print("Fetching instruction...")
+		print(f"Fetching memory at address - {hex(addr)}...")
 		return mem[addr % MEMORY_MAX_ADDRESS]
 	except:
-		return None # Nothing at the provided address
+		return 0x0 # Nothing set at the provided address
 
 def decode() -> None:
 	print("Decoding instruction...")
 
-def execute(cmd, args) -> None:
-	global pc
+def execute() -> None:
 	print("Executing instruction...")
-	data = fetch(pc)
-	print(f"Retrieved Data: {data}")
-	if (data is None):
-		print(f"No command found")
-		return
-
-	pc += 1
-	print(f"Fetched Data: {fetch(pc)}")
 
 
 def init() -> None:
-	print("Initializing...")
+	print("Initializing unit...")
+	reg["program_counter"] = MEMORY_MIN_ADDRESS
 
 
 def reset() -> None:
-	global pc, sp, a_reg, x_reg, y_reg, flag_break, flag_carry, flag_zero, flag_interrupt_disable, flag_decimal_mode, flag_overflow, flag_negative
-	print("Resetting...")
-	pc = MEMORY_MIN_ADDRESS # Reset to the start of the memory stack
-	a_reg = 0
-	sp = x_reg = y_reg = None
-	flag_carry = flag_zero = flag_interrupt_disable = flag_decimal_mode = flag_break = flag_overflow = flag_negative = False
+	print("Resetting unit...")
+
+	# Reset registers
+	for r in reg.keys():
+		reg[r] = 0x0
+
+	# Reset flags
+	for f in flags.keys():
+		flags[f] = False
+
 	init()
 
 def __main__() -> None:
-	global pc, a_reg,flag_carry, flag_break, flag_decimal_mode, flag_interrupt_disable, flag_decimal_mode, flag_negative, flag_overflow, flag_zero
 	reset()
-	while pc < MEMORY_MAX_ADDRESS:
-		print("Current Counter", pc)
-		cmd = fetch(pc)
-		match (cmd):
-			case _ if cmd == INS_LDA_IM[0]:
+
+	while reg["program_counter"] <= MEMORY_MAX_ADDRESS and not flags["break"]:
+		print(f"Current Counter - {hex(reg["program_counter"])}")
+		op_code = fetch(reg["program_counter"])
+		if op_code is None:
+			raise Exception(f"Address {reg["program_counter"]} is invalid")
+
+		ins = INS_SET[op_code]
+
+		if ins["label"] == "BRK":
+			flags["break"] = True
+
+
+		reg["program_counter"] += ins["bytes"]
+		""" match (cmd):
+			case _ if cmd == INS_SET["LDA"][0]:
 				print("LDA Instruction Read")
-				args = [fetch(pc + i + 1) for i in range(INS_LDA_IM[1] - 1)]
+				args = [fetch(reg["program_counter"] + i + 1) for i in range(INS_SET["LDA"][1] - 1)]
 				print(f"Found Args: {args}")
 				if (args[0] is None):
 					raise Exception("Insufficient parameters for command")
 
-				a_reg = args[0]
-				flag_negative = a_reg < 0
-				flag_zero = a_reg == 0
-				pc += INS_LDA_IM[1]
-			case _ if cmd == INS_HALT[0]:
+				reg["accumulator"] = args[0]
+				flags["negative"] = reg["accumulator"] < 0
+				flags["zero"] = reg["accumulator"] == 0
+				reg["program_counter"] += INS_SET["LDA"][1]
+			case _ if cmd == INS_SET["BRK"][0]:
 				print("Halt read. Stopping...")
-				break
-			case _:
-				pc += 1
-		print("Current Accumulator", a_reg)
-
+				flags["break"] = True
+			case _ if cmd == INS_SET["NOP"][0]:
+				print("Noop read. Continuing...")
+				reg["program_counter"] += INS_SET["NOP"][1]
+			case None:
+				print(f"Unknown command read - {cmd}")
+				reg["program_counter"] += 1
+		"""
 
 if __name__ == "__main__":
 	__main__()
