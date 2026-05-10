@@ -1,38 +1,36 @@
 def accumulator():
 	pass
 
-def absolute():
-	pass
+def absolute(value: int) -> int:
+	return value
 
-def absolute_x_indexed():
-	pass
+def absolute_indexed(value: int, register: int) -> int:
+	return value + register
 
-def absolute_y_indexed():
-	pass
+def immediate(value: int) -> int:
+	return value
 
-def immediate():
-	pass
+def implied(value: int) -> int:
+	return value
 
-def implied():
-	pass
+def indirect(value: int) -> int:
+	return value
 
-def indirect():
-	pass
+def x_indexed_indirect(value: int, x_register: int) -> int:
+	return value
 
-def x_indexed_indirect():
-	pass
+def indirect_y_indexed(value: int, y_register: int) -> int:
+	return value
 
-def indirect_y_indexed():
-	pass
+def relative(value: int) -> int:
+	return value
 
-def relative():
-	pass
+def zero_page(value: int) -> int:
+	""" Returns the address value translated and validated """
+	if 0x0 > value < 0xFF:
+		raise Exception("Invalid address value")
 
-def zero_page():
-	pass
+	return value
 
-def zero_page_x_indexed():
-	pass
-
-def zero_page_y_indexed():
-	pass
+def zero_page_indexed(value: int, register: int) -> int:
+	return value + register
