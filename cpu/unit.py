@@ -4,6 +4,8 @@ from cpu.addressing import zero_page, zero_page_indexed
 
 class CPU:
 	""" The central processing unit of the whole system. This will handle all of the logic preovided within  """
+	registers: dict[str, int]
+	""" The registers of the CPU. This will include the program counter, stack pointer, and the A, X, and Y registers. """
 	PC: int
 	""" The program counter  """
 	SP: int
@@ -18,10 +20,11 @@ class CPU:
 	""" Operation Flags """
 
 	def __init__(self):
-		self.flags = dict()
+		self.flags = dict().fromkeys(FLAGS, False)
 
-	def __enter__(self):
+	def __enter__(self) -> CPU:
 		self.reset()
+		return self
 
 	def __exit__(self, _type, _value, _tb):
 		pass
@@ -59,11 +62,11 @@ class CPU:
 		""" Reset the CPU to it's initial state """
 		self.PC = MEMORY_MIN_ADDRESS
 		self.SP = self.A = self.X = self.Y = NULL_POINTER
-		self.flags.clear()
+		self.flags = dict.fromkeys(FLAGS, False)
 
 	def fetch(self, mem: Memory) -> int:
 		""" Fetch the next value at the location of the program counter value and increment the counter """
-		data = mem.get(self.PC, 0x0)
+		data = mem.get(self.PC, 0x00)
 		# Increment the program counter and wrap around if it overflows
 		self.PC = (self.PC + 1) % MEMORY_MAX_ADDRESS
 		return data
@@ -71,6 +74,7 @@ class CPU:
 	def execute(self, mem: Memory):
 		""" Decode the provided op code and perform the actions it represents """
 		while not self.flags.get(FLAGS.B, False):
+			print(f"Reading opcode from - {hex(self.PC)}")
 			op_code = self.fetch(mem)
 			match(OP_CODES(op_code)):
 				case OP_CODES.NOP:
@@ -108,22 +112,28 @@ class CPU:
 					addr = zero_page_indexed(data, self.X)
 					self.__set_y__(self.__read__(addr, mem= mem))
 				case OP_CODES.STA_ZP:
-					addr = zero_page(self.fetch(mem))
+					data = self.fetch(mem)
+					addr = zero_page(data)
 					self.__write__(self.A, address=addr, mem=mem)
 				case OP_CODES.STA_ZP_IDX:
-					addr = zero_page_indexed(self.fetch(mem), self.X)
+					data = self.fetch(mem)
+					addr = zero_page_indexed(data, self.X)
 					self.__write__(self.A, address=addr, mem=mem)
 				case OP_CODES.STX_ZP:
-					addr = zero_page(self.fetch(mem))
+					data = self.fetch(mem)
+					addr = zero_page(data)
 					self.__write__(self.X, address=addr, mem=mem)
 				case OP_CODES.STX_ZP_IDX:
-					addr = zero_page_indexed(self.fetch(mem), self.Y)
+					data = self.fetch(mem)
+					addr = zero_page_indexed(data, self.Y)
 					self.__write__(self.X, address=addr, mem=mem)
 				case OP_CODES.STY_ZP:
-					addr = zero_page(self.fetch(mem))
+					data = self.fetch(mem)
+					addr = zero_page(data)
 					self.__write__(self.Y, address=addr, mem=mem)
 				case OP_CODES.STY_ZP_IDX:
-					print(f"Found Address Value - {addr}")
+					data = self.fetch(mem)
+					addr = zero_page_indexed(data, self.X)
 					self.__write__(self.Y, address=addr, mem=mem)
 				case _:
 					print(f"Unknown opcode - {hex(op_code)}")
