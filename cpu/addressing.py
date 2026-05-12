@@ -1,31 +1,34 @@
+from cpu import Memory
+
+
 def accumulator():
 	pass
 
-def absolute(value: int) -> int:
-	return value
+def absolute(ll: int, hh: int) -> int:
+	return (hh << 8) + ll
 
-def absolute_indexed(value: int, register: int) -> int:
-	return value + register
+def absolute_indexed(ll: int, hh: int, register: int) -> int:
+	return absolute(ll, hh) + register
 
-def indirect(least: int, highest: int) -> int:
-	return (highest << 8) + least
+def indirect(ll: int, hh: int) -> int:
+	return absolute(ll, hh)
 
 # MAYBE: Combine these 2 functions into one like the other index functions?
-def x_indexed_indirect(value: int, x_register: int) -> int:
-	return (value + x_register) % 0x0100
+def pre_indexed_indirect(value: int, x_register: int) -> int:
+	return zero_page(value + x_register)
 
-def indirect_y_indexed(value: int, y_register: int) -> int:
-	return (value + y_register) % 0x0100
+def post_indexed_indirect(ll: int, hh: int, y_register: int) -> int:
+	return absolute(ll, hh) + y_register
 
-def relative(value: int) -> int:
-	return value
+def relative(value: int, offset: int) -> int:
+	return value + offset
 
 def zero_page(value: int) -> int:
 	""" Returns the address value translated and validated """
-	if 0x0 > value < 0xFF:
+	if 0x00 > value < 0xFF:
 		raise Exception(f"Invalid address value - {hex(value)}")
 
-	return value
+	return value % 0x0100
 
 def zero_page_indexed(value: int, register: int) -> int:
 	""" Returns the address value translated and validated with the provided register value """
