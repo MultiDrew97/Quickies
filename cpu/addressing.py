@@ -24,10 +24,7 @@ def relative(value: int, offset: int) -> int:
 	return value + offset
 
 def zero_page(value: int) -> int:
-	""" Returns the address value translated and validated """
-	if 0x00 > value < 0xFF:
-		raise Exception(f"Invalid address value - {hex(value)}")
-
+	""" Returns the address value translated and wrapped around if it exceeds the 0xFF limit """
 	return value % 0x0100
 
 def zero_page_indexed(value: int, register: int) -> int:
@@ -37,4 +34,4 @@ def zero_page_indexed(value: int, register: int) -> int:
 	if 0x00 > register < 0xFF:
 		raise Exception(f"Invalid register value - {hex(register)}")
 
-	return (value + register) % 0x0100
+	return zero_page(value + register)
