@@ -42,6 +42,8 @@ def test_zp_indexed():
 
 	assert zero_page_indexed(index, register=x_value) == 0x18
 	assert zero_page_indexed(index, register=y_value) == 0x28
+	# Test wrap around
+	assert zero_page_indexed(0xFF, register=0x01) == 0x00
 
 	with CPU() as cpu:
 		cpu.execute(mem)

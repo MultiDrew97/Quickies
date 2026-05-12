@@ -24,7 +24,7 @@ https://www.masswerk.at/6502/6502_instruction_set.html
 class FLAGS(Enum):
 	N=7
 	V=6
-	_=5
+	# _=5 Ignored bit
 	B=4
 	D=3
 	I=2
