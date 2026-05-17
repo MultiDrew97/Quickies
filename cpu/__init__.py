@@ -1,10 +1,12 @@
 from enum import Enum
 from typing import Any
 
-""" The minimum and maximum values available for memory access """
 MEMORY_MIN_ADDRESS, MEMORY_MAX_ADDRESS = 0x0000, 0xFFFF
+""" The minimum and maximum values available for memory access """
+NULL_POINTER: int = 0x00
 """ The value to use for a NULL pointer """
-NULL_POINTER: int = 0x0
+STACK_START_LOCATION = 0xFF
+""" The starting value for the stack pointer of the unit """
 
 """
 Typing to keep consistency for instruction sets
@@ -24,12 +26,16 @@ https://www.masswerk.at/6502/6502_instruction_set.html
 class FLAGS(Enum):
 	N=7
 	V=6
-	# _=5 Ignored bit
+	_=5 # Ignored bit
 	B=4
 	D=3
 	I=2
 	Z=1
 	C=0
+
+def convert_to_absolute_address(ll: int, hh: int) -> int:
+	""" Convert the provided 8-bit LSB and 8-bit MSB into a proper 16-bit address and wrap around if it goes"""
+	return ((hh << 8) + ll) % 0x010000
 
 # OP Codes
 class OP_CODES(Enum):

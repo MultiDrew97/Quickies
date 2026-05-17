@@ -1,4 +1,4 @@
-from cpu import FLAGS, MEMORY_MIN_ADDRESS, NULL_POINTER, OP_CODES
+from cpu import FLAGS, MEMORY_MIN_ADDRESS, NULL_POINTER, OP_CODES, STACK_START_LOCATION
 from cpu.unit import CPU
 
 def test_init():
@@ -21,9 +21,10 @@ def test_reset():
 		cpu.reset()
 
 		assert cpu.PC == MEMORY_MIN_ADDRESS
-		assert cpu.SP == cpu.A == cpu.X == cpu.Y == NULL_POINTER
+		assert cpu.SP == STACK_START_LOCATION
+		assert cpu.A == cpu.X == cpu.Y == NULL_POINTER
 		print(cpu.status.values())
-		assert len(cpu.status) == 8 and all(flag is False for flag in cpu.status.values())
+		assert len(cpu.status) == 8 and all(status is False for status in cpu.status.values())
 
 def test_negative_flag():
 	with CPU() as cpu:
@@ -107,3 +108,23 @@ def test_fetch():
 		cpu.PC = start
 		assert cpu.fetch(mem) == value
 		assert cpu.PC == start + 1
+
+def test_status_to_bytes():
+	with CPU() as cpu:
+		for f in FLAGS:
+			cpu.status[f] = True
+
+		value = cpu.__status_to_byte__()
+		assert value == 0b11111111
+
+def test_bytes_to_status():
+	value = 0b11011111
+	with CPU() as cpu:
+		cpu.__byte_to_status__(value)
+
+		for f in FLAGS:
+			if f == FLAGS._:
+				# Flag in this place is ignored by chip so doesn't need to be checked at this time
+				continue
+
+			assert cpu.status[f] == True
