@@ -1,4 +1,4 @@
-from cpu import FLAGS, OP_CODES, Memory
+from cpu import FLAGS, OP_CODES, Memory, convert_to_absolute_address
 from cpu.addressing import absolute, zero_page
 from cpu.unit import CPU
 
@@ -15,13 +15,14 @@ def test_ora_idx_x():
 	value = 0x69
 	or_vaue = 0x96
 	x_value = 0x10
+	zp_value = 0x00
 	mem: Memory = {
 		0x0000: OP_CODES.LDA_IM.value,
 		0x0001: value,
 		0x0002: OP_CODES.LDX_IM.value,
 		0x0003: x_value,
 		0x0004: OP_CODES.ORA_IDX_X.value,
-		0x0005: 0x00,
+		0x0005: zp_value,
 		0x0010: 0x15,
 		0x0011: 0x20,
 		0x2015: or_vaue
@@ -29,6 +30,7 @@ def test_ora_idx_x():
 
 	with CPU() as cpu:
 		cpu.execute(mem)
+		print(cpu.__read__(zp_value + x_value, mem=mem))
 		assert cpu.A == value | or_vaue
 		assert cpu.X == x_value
 
@@ -70,17 +72,14 @@ def test_php():
 
 	with CPU() as cpu:
 		sp_start = cpu.SP
-		cpu.status[FLAGS.N] = True
-		cpu.status[FLAGS.V] = True
-		cpu.status[FLAGS.B] = False
-		cpu.status[FLAGS.D] = True
-		cpu.status[FLAGS.I] = True
-		cpu.status[FLAGS.Z] = True
-		cpu.status[FLAGS.C] = True
+		for f in FLAGS:
+			cpu.status[f] = f is not FLAGS.B
+
+		print(f"Current Status - {cpu.status}")
 
 		cpu.execute(mem)
-		loc = 0x0100 + zero_page(cpu.SP + 1) # Stack pointer is decremented after writing to stack
-		assert cpu.__read__(loc, mem=mem)  == 0b11001111
+		loc = 0x0100 + sp_start
+		assert cpu.__read__(loc, mem=mem) == 0b11001111
 		assert cpu.SP == sp_start - 1
 
 def test_ora_im():
@@ -116,7 +115,7 @@ def test_ora_abs():
 	or_vaue = 0x96
 	ll = 0x15
 	hh = 0x20
-	loc: int = absolute(ll, hh)
+	loc: int = convert_to_absolute_address(ll, hh)
 	mem: Memory = {
 		0x0000: OP_CODES.LDA_IM.value,
 		0x0001: value,
@@ -134,7 +133,7 @@ def test_asl_abs():
 	value = 0xFF
 	ll = 0x15
 	hh = 0x20
-	loc: int = absolute(ll, hh)
+	loc: int = convert_to_absolute_address(ll, hh)
 	mem: Memory = {
 		0x0000: OP_CODES.LDA_IM.value,
 		0x0001: value,
@@ -155,7 +154,7 @@ def test_bpl():
 	or_vaue = 0x96
 	ll = 0x15
 	hh = 0x20
-	loc: int = absolute(ll, hh)
+	loc: int = convert_to_absolute_address(ll, hh)
 	mem: Memory = {
 		0x0000: OP_CODES.LDA_IM.value,
 		0x0001: value,

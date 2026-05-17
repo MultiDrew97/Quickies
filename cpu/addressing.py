@@ -1,37 +1,40 @@
-from cpu import Memory
+from typing import TYPE_CHECKING
+
+from cpu import Memory, convert_to_absolute_address
+
+if TYPE_CHECKING:
+	from cpu.unit import CPU
 
 
-def accumulator():
-	pass
+# TODO: Change so that the register can be specified and retrieved from the passed cpu instance instead of having to pass the register value as an argument
+def absolute(cpu: CPU, mem: Memory, offset: int = 0x00) -> int:
+	ll = cpu.fetch(mem)
+	hh = cpu.fetch(mem)
+	return convert_to_absolute_address(ll, hh) + offset
 
-def absolute(ll: int, hh: int) -> int:
-	return (hh << 8) + ll
-
-def absolute_indexed(ll: int, hh: int, register: int) -> int:
-	return absolute(ll, hh) + register
-
-def indirect(ll: int, hh: int) -> int:
-	return absolute(ll, hh)
+def indirect(cpu: CPU, mem: Memory) -> int:
+	ab = absolute(cpu=cpu, mem=mem)
+	ll = cpu.__read__(ab, mem=mem)
+	hh = cpu.__read__(ab, mem=mem)
+	return convert_to_absolute_address(ll, hh)
 
 # MAYBE: Combine these 2 functions into one like the other index functions?
-def pre_indexed_indirect(value: int, x_register: int) -> int:
-	return zero_page(value + x_register)
+def pre_indexed_indirect(cpu: CPU, mem: Memory) -> int:
+	zp = zero_page(cpu=cpu, mem=mem, offset=cpu.X)
+	ll = cpu.__read__(zp, mem=mem)
+	hh = cpu.__read__((zp + 1) % 0x0100, mem=mem)
+	return convert_to_absolute_address(ll, hh)
 
-def post_indexed_indirect(ll: int, hh: int, y_register: int) -> int:
-	return absolute(ll, hh) + y_register
+def post_indexed_indirect(cpu: CPU, mem: Memory) -> int:
+	zp = zero_page(cpu=cpu, mem=mem)
+	ll = cpu.__read__(zp, mem=mem)
+	hh = cpu.__read__((zp + 1) % 0x0100, mem=mem)
+	return convert_to_absolute_address(ll, hh) + cpu.Y
 
-def relative(value: int, offset: int) -> int:
-	return value + offset
+def relative(cpu: CPU, mem: Memory) -> int:
+	value = cpu.fetch(mem)
+	return cpu.PC + value
 
-def zero_page(value: int) -> int:
-	""" Returns the address value translated and wrapped around if it exceeds the 0xFF limit """
-	return value % 0x0100
-
-def zero_page_indexed(value: int, register: int) -> int:
-	""" Returns the address value translated and validated with the provided register value """
-	if 0x00 > value < 0xFF:
-		raise Exception(f"Invalid address value - {hex(value)}")
-	if 0x00 > register < 0xFF:
-		raise Exception(f"Invalid register value - {hex(register)}")
-
-	return zero_page(value + register)
+def zero_page(cpu: CPU, mem: Memory, offset: int = 0x00) -> int:
+	value = cpu.fetch(mem)
+	return (value + offset) % 0x0100
