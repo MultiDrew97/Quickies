@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 from cpu import Memory, convert_to_absolute_address
 
 if TYPE_CHECKING:
+	# Prevents a circular dependecy. If I can find a better way to structure everything, then I can remove it
 	from cpu.unit import CPU
 
 

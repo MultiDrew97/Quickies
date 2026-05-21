@@ -66,8 +66,17 @@ class CPU:
 	def __push_to_stack__(self, value: int, mem: Memory):
 		""" Push a value onto the stack and decrement the stack pointer """
 		addr = 0x0100 + (self.SP % 0x0100)
-		self.__write__(value, address=addr, mem=mem)
-		self.SP = (self.SP - 1) % 0x100
+
+		if 0x00 < value < 0xFF:
+			self.__write__(value, address=addr, mem=mem)
+			self.SP = (self.SP - 1) % 0x0100
+			return
+
+		# Everything should be at most the 16-bits of the program counter, but will just loop through just in case
+		for i in range(0, 16, 4):
+			data = value >> i
+			self.__write__(data % 0x0100, address=addr, mem=mem)
+			self.SP = (self.SP - 1) % 0x0100
 
 	def __pull_from_stack__(self, mem: Memory) -> int:
 		""" Push a value onto the stack and decrement the stack pointer """

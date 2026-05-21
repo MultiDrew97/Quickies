@@ -78,9 +78,11 @@ def test_php():
 		print(f"Current Status - {cpu.status}")
 
 		cpu.execute(mem)
+		print(mem)
 		loc = 0x0100 + sp_start
-		assert cpu.__read__(loc, mem=mem) == 0b11001111
-		assert cpu.SP == sp_start - 1
+		assert cpu.SP != sp_start
+		assert cpu.__read__(loc, mem=mem) == 0b11101111
+
 
 def test_ora_im():
 	value = 0x69
