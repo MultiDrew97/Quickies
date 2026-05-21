@@ -1,7 +1,6 @@
 from cpu import Memory, OP_CODES
 from cpu.unit import CPU
 
-cpu = CPU()
 # FIXME: Convert to use bytes instead of int
 """ The memory of the system """
 mem: Memory
@@ -9,7 +8,6 @@ mem: Memory
 def init() -> None:
 	global mem
 	print("Initializing unit...")
-	cpu.reset()
 	mem = {
 		0x0000: OP_CODES.LDA_IM.value,
 		0x0001: OP_CODES.NOP.value,
@@ -18,9 +16,10 @@ def init() -> None:
 	}
 
 def __main__() -> None:
-	init()
-	cpu.execute(mem)
-	print(f"Resuting Memory: {mem}")
+	with CPU() as cpu:
+		init()
+		cpu.execute(mem)
+		print(f"Resulting Memory: {mem}")
 
 if __name__ == "__main__":
 	__main__()
