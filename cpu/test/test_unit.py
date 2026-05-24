@@ -1,4 +1,5 @@
-from cpu import FLAGS, MEMORY_MIN_ADDRESS, NULL_POINTER, OP_CODES, STACK_START_LOCATION
+from cpu import FLAGS, MEMORY_MIN_ADDRESS, NULL_POINTER, OP_CODES, STACK_START_LOCATION, Memory
+from cpu.test import TEST_VALUE
 from cpu.unit import CPU
 
 def test_init():
@@ -128,3 +129,21 @@ def test_bytes_to_status():
 				continue
 
 			assert cpu.status[f] == True
+
+def test_read():
+	value = TEST_VALUE
+	addr = 0x01
+	mem: Memory = {
+		addr: value
+	}
+	with CPU() as cpu:
+		assert cpu.__read__(addr, mem=mem) == value
+		assert cpu.__read__(addr + 1, mem=mem) == 0x00
+
+def test_write():
+	value = TEST_VALUE
+	addr = 0x01
+	mem: Memory = {}
+	with CPU() as cpu:
+		cpu.__write__(value, address=addr, mem=mem)
+		assert mem[addr] == value
