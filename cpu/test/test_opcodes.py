@@ -1,5 +1,5 @@
 from cpu import FLAGS, OP_CODES, Memory, convert_to_absolute_address
-from cpu.addressing import absolute, zero_page
+from cpu.test import TEST_VALUE
 from cpu.unit import CPU
 
 def test_brk():
@@ -152,22 +152,17 @@ def test_asl_abs():
 		assert cpu.status[FLAGS.C] == True
 
 def test_bpl():
-	value = 0x69
-	or_vaue = 0x96
-	ll = 0x15
-	hh = 0x20
-	loc: int = convert_to_absolute_address(ll, hh)
+	value = TEST_VALUE
+	or_value = 0x96
 	mem: Memory = {
 		0x0000: OP_CODES.LDA_IM.value,
 		0x0001: value,
 		0x0002: OP_CODES.BPL.value,
 		0x0003: 0xF5, # Relative jump of 5 bytes
-		0x0004: OP_CODES.ORA_ABS.value,
-		0x0005: ll,
-		0x0006: hh,
-		loc: or_vaue
+		0x0004: OP_CODES.ORA_IM.value,
+		0x0005: or_value,
 	}
 
 	with CPU() as cpu:
 		cpu.execute(mem)
-		assert cpu.A != value | or_vaue
+		assert cpu.A != value | or_value

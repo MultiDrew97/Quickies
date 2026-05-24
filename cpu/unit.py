@@ -38,6 +38,7 @@ class CPU:
 		self.status[FLAGS.V] = (left ^ right) & 0x80 > 0x00
 
 	def __set_carry__(self, value: int):
+		# FIXME: This might not work consistently for right shifts, since this only checks for the left most bit
 		self.status[FLAGS.C] = value & 0x80 > 0x00
 
 	def __set_a__(self, value: int):
@@ -55,6 +56,9 @@ class CPU:
 		self.__set_zero__(self.Y)
 		self.__set_negative__(self.Y)
 
+	def __update_sp__(self, delta: int):
+		self.SP = (self.SP + delta) % 0x0100
+
 	def __read__(self, address: int, mem: Memory) -> int:
 		""" Read mem from a specific mem location """
 		return mem.get(address, NULL_POINTER)
@@ -65,24 +69,28 @@ class CPU:
 
 	def __push_to_stack__(self, value: int, mem: Memory):
 		""" Push a value onto the stack and decrement the stack pointer """
-		addr = 0x0100 + (self.SP % 0x0100)
+		def get_addr() -> int:
+			return 0x0100 + (self.SP % 0x0100)
 
-		if 0x00 < value < 0xFF:
-			self.__write__(value, address=addr, mem=mem)
-			self.SP = (self.SP - 1) % 0x0100
+		if value < 0x00 or value > 0xFFFF:
+			raise Exception(f"Invalid argument for value was passed - {value}")
+
+		if value <= 0xFF:
+			self.__write__(value, address=get_addr(), mem=mem)
+			self.__update_sp__(-1)
 			return
 
 		# Everything should be at most the 16-bits of the program counter, but will just loop through just in case
 		for i in range(0, 16, 4):
 			data = value >> i
-			self.__write__(data % 0x0100, address=addr, mem=mem)
-			self.SP = (self.SP - 1) % 0x0100
+			self.__write__(data % 0x0100, address=get_addr(), mem=mem)
+			self.__update_sp__(-1)
 
 	def __pull_from_stack__(self, mem: Memory) -> int:
 		""" Push a value onto the stack and decrement the stack pointer """
 		addr = 0x0100 + (self.SP % 0x0100)
 		value = self.__read__(addr, mem=mem)
-		self.SP = (self.SP + 1) % 0x100
+		self.__update_sp__(1)
 		return value
 
 	def __status_to_byte__(self) -> int:
@@ -139,7 +147,12 @@ class CPU:
 			#  Fetch command
 			op_code = self.fetch(mem)
 
-			""" TODO: Determine how to combine the different operations into singe functions that can be reused. I still can't find the pattern in the codes to determine what they do and how to handle addressing and combine yet, but will continue to keep an eye out for it. """
+			"""
+			TODO: Determine how to combine the different operations into singe functions that can be reused. I still can't find the pattern in the codes to determine what they do and how to handle addressing and combine yet, but will continue to keep an eye out for it.
+
+			TODO: Convert to use a match that can seect between the addressing modes when I finally figure out the pattern in the op codes to determine how to combine them into single functions that can be reused instead of having to write out each one separately like this
+			"""
+
 			# Decode the command to determine action and addressing mode
 
 			# Execute the command based on decoded info
@@ -406,116 +419,125 @@ class CPU:
 					# Compare memory value with accumulator from immediate value
 					value = self.fetch(mem)
 					cmp = self.A - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CMP_ZP:
 					# Compare memory value with accumulator from zero page
 					addr = zero_page(cpu=self, mem=mem)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.A - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CMP_ZP_IDX_X:
 					# Compare memory value with accumulator from zero page indexed by X
 					addr = zero_page(cpu=self, mem=mem, offset=self.X)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.A - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CMP_ABS:
 					# Compare memory value with accumulator from absolute address
 					addr = absolute(cpu=self, mem=mem)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.A - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CMP_ABS_IDX_X:
 					# Compare memory value with accumulator from absolute address indexed by X
-					ll = self.fetch(mem)
-					hh = self.fetch(mem)
 					addr = absolute(cpu=self, mem=mem, offset=self.X)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.A - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CMP_ABS_IDX_Y:
 					# Compare memory value with accumulator from absolute address indexed by Y
 					addr = absolute(cpu=self, mem=mem, offset=self.Y)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.A - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CMP_IDX_X:
 					# Compare memory value with accumulator from Pre-Indexed Indirect X
 					addr = zero_page(cpu=self, mem=mem, offset=self.X)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.A - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CMP_IDX_Y:
 					# Compare memory value with accumulator from Post-Indexed Indirect Y
 					addr = post_indexed_indirect(cpu=self, mem=mem)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.A - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CPX_IM:
 					# Compare memory value with X from immediate value
 					value = self.fetch(mem)
 					cmp = self.X - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CPX_ZP:
 					# Compare memory value with X from zero page
 					addr = zero_page(cpu=self, mem=mem)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.X - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CPX_ABS:
 					# Compare memory value with X from absolute address
 					addr = absolute(cpu=self, mem=mem)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.X - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CPY_IM:
 					# Compare memory value with Y from immediate value
 					value = self.fetch(mem)
 					cmp = self.Y - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CPY_ZP:
 					# Compare memory value with Y from zero page
 					addr = zero_page(cpu=self, mem=mem)
 					value = self.__read__(addr, mem=mem)
 					cmp = self.Y - value
-					self.status[FLAGS.C] = cmp > 0x00
+					# self.status[FLAGS.C] = cmp > 0x00
 					self.__set_zero__(cmp)
 					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 				case OP_CODES.CPY_ABS:
 					# Compare memory value with Y from absolute address
-					# TODO: Convert to use a match that can seect between the addressing modes when I finally figure out the pattern in the op codes to determine how to combine them into single functions that can be reused instead of having to write out each one separately like this
-					# ll = self.fetch(mem)
-					# hh = self.fetch(mem)
 					addr = absolute(cpu=self, mem=mem)
 					value = self.__read__(addr, mem=mem)
-					fla = self.Y - value
-					self.status[FLAGS.C] = fla > 0x00
-					self.__set_zero__(fla)
-					self.__set_negative__(fla)
+					cmp = self.Y - value
+					# self.status[FLAGS.C] = fla > 0x00
+					self.__set_zero__(cmp)
+					self.__set_negative__(cmp)
+					self.__set_carry__(cmp)
 
 				# Register transfer based operations
 				case OP_CODES.TAX:
@@ -548,12 +570,14 @@ class CPU:
 					self.__set_carry__(self.A)
 					self.__set_a__((self.A << 1) % 0x100)
 				case OP_CODES.ASL_ZP:
+					# Shift the value in the address provided from zero page left by one
 					addr = zero_page(cpu=self, mem=mem)
 					value = self.__read__(addr, mem=mem)
 					self.__set_carry__(value)
 					value = (value << 1) % 0x100
 					self.__write__(value, address=addr, mem=mem)
 				case OP_CODES.ASL_ABS:
+					# Shift the value in the address provided by absolute addressing left by one
 					addr = absolute(cpu=self, mem=mem)
 					value = self.__read__(addr, mem=mem)
 					self.__set_carry__(value)
@@ -562,28 +586,33 @@ class CPU:
 
 				# Jumps and Calls based operations
 				case OP_CODES.JMP_ABS:
+					# Jump to an absolute address in memory
 					addr = absolute(cpu=self, mem=mem)
 					self.PC = addr
 				case OP_CODES.JMP_IND:
+					# Jump to an indirectly referenced address in memory
 					addr = indirect(cpu=self, mem=mem)
 					self.PC = addr
 				case OP_CODES.JSR_ABS:
+					# Jump to a subrountine that is absolutely addressed
 					addr = absolute(cpu=self, mem=mem)
 					self.PC = addr
 				case OP_CODES.RTS:
+					# Return from subroutine, pulling the address from the stack
 					ll = self.__pull_from_stack__(mem=mem)
 					hh = self.__pull_from_stack__(mem=mem)
 
-					self.PC = (hh << 8) + ll - 1
+					self.PC = convert_to_absolute_address(ll, hh)
 
 				# Branching based operations
 				case OP_CODES.BPL:
 					# Branch if positive (negative flag is not set)
+					addr = relative(cpu=self, mem=mem)
 					if self.status[FLAGS.N]:
 						# Continue since N is set
 						continue
 
-					addr = relative(cpu=self, mem=mem)
+					self.PC = addr
 				case OP_CODES.BMI:
 					# Branch if negative (negative flag is set)
 					if not self.status[FLAGS.N]:
@@ -591,13 +620,15 @@ class CPU:
 						continue
 
 					addr = relative(cpu=self, mem=mem)
+					self.PC = addr
 				case OP_CODES.BEQ:
-					# Branch if 0 (zero flag is set)
+					# Branch if equal (zero flag is set)
 					if not self.status[FLAGS.Z]:
 						# Continue since Z is not set
 						continue
 
 					addr = relative(cpu=self, mem=mem)
+					self.PC = addr
 				case OP_CODES.BNE:
 					# Branch if not equal (zero flag is not set)
 					if self.status[FLAGS.Z]:
@@ -605,6 +636,7 @@ class CPU:
 						continue
 
 					addr = relative(cpu=self, mem=mem)
+					self.PC = addr
 				case OP_CODES.BCC:
 					# Branch if carry is not set (carry flag is cleared)
 					if self.status[FLAGS.C]:
@@ -612,6 +644,7 @@ class CPU:
 						continue
 
 					addr = relative(cpu=self, mem=mem)
+					self.PC = addr
 				case OP_CODES.BCS:
 					# Branch if carry is set (carry flag is set)
 					if not self.status[FLAGS.C]:
@@ -619,6 +652,7 @@ class CPU:
 						continue
 
 					addr = relative(cpu=self, mem=mem)
+					self.PC = addr
 				case OP_CODES.BVC:
 					# Branch if overflow is not set (overflow flag is cleared)
 					if self.status[FLAGS.V]:
@@ -626,6 +660,7 @@ class CPU:
 						continue
 
 					addr = relative(cpu=self, mem=mem)
+					self.PC = addr
 				case OP_CODES.BVS:
 					# Branch if overflow is set (overflow flag is set)
 					if not self.status[FLAGS.V]:
@@ -633,88 +668,116 @@ class CPU:
 						continue
 
 					addr = relative(cpu=self, mem=mem)
+					self.PC = addr
 
 				# Load and Store based operations
 				case OP_CODES.LDA_IM:
+					# Load the value immediately after the command into the accumulator
 					value = self.fetch(mem)
 					self.__set_a__(value)
 				case OP_CODES.LDA_ZP:
+					# Load the value from the zero page address into the accumulator
 					addr = zero_page(cpu=self, mem=mem)
 					self.__set_a__(self.__read__(addr, mem=mem))
 				case OP_CODES.LDA_ZP_IDX:
+					# Load the value from the zero page address indexed by the X register into the accumulator
 					addr = zero_page(cpu=self, mem=mem, offset=self.X)
 					self.__set_a__(self.__read__(addr, mem=mem))
 				case OP_CODES.LDA_ABS:
+					# Load the value absolutely addressed into the accumulator
 					addr = absolute(cpu=self, mem=mem)
 					self.__set_a__(self.__read__(addr, mem=mem))
 				case OP_CODES.LDA_ABS_IDX_X:
+					# Load the value absolutely addressed and indexed by the X register into the accumulator
 					addr = absolute(cpu=self, mem=mem, offset=self.X)
 					data = self.__read__(addr, mem=mem)
 					self.__set_a__(data)
 				case OP_CODES.LDA_ABS_IDX_Y:
+					# Load the value absolutely addressed and indexed by the Y register into the accumulator
 					addr = absolute(cpu=self, mem=mem, offset=self.Y)
 					self.__set_a__(self.__read__(addr, mem=mem))
 				case OP_CODES.LDX_IM:
+					# Load the value immediately afte the opcode into the X register
 					self.__set_x__(self.fetch(mem))
 				case OP_CODES.LDX_ZP:
+					# Load the value from the zero page address into the X register
 					addr = zero_page(cpu=self, mem=mem)
 					self.__set_x__(self.__read__(addr, mem=mem))
 				case OP_CODES.LDX_ZP_IDX:
+					# Load the value from zero page, indexed by the Y register into the X register
 					addr = zero_page(cpu=self, mem=mem, offset=self.Y)
 					self.__set_x__(self.__read__(addr, mem=mem))
 				case OP_CODES.LDX_ABS:
+					# Load the value from the absolute address in memory into the X register
 					addr = zero_page(cpu=self, mem=mem, offset=self.Y)
 					self.__set_x__(self.__read__(addr, mem=mem))
 				case OP_CODES.LDX_ABS_IDX:
+					# Load the value from the absolute address indexed by the Y regsiter in memory into the X register
 					addr = zero_page(cpu=self, mem=mem, offset=self.Y)
 					self.__set_x__(self.__read__(addr, mem=mem))
 				case OP_CODES.LDY_IM:
+					# Load the value immediately after the command into the Y register
 					self.__set_y__(self.fetch(mem))
 				case OP_CODES.LDY_ZP:
+					# Load the value from the zero page address in memory into the Y register
 					addr = zero_page(cpu=self, mem=mem)
 					self.__set_y__(self.__read__(addr, mem = mem))
 				case OP_CODES.LDY_ZP_IDX:
+					# Load the value from the zero page address indexed by the X register into the Y register
 					addr = zero_page(cpu=self, mem=mem, offset=self.X)
 					self.__set_y__(self.__read__(addr, mem= mem))
 				case OP_CODES.LDY_ABS:
+					# Load the value from the absolute address in memory into the Y register
 					addr = absolute(cpu=self, mem=mem)
 					self.__set_y__(self.__read__(addr, mem= mem))
 				case OP_CODES.LDY_ABS_IDX:
+					# Load the value from the absolute address indexed by the X register into the Y register
 					addr = absolute(cpu=self, mem=mem, offset=self.X)
 					self.__set_y__(self.__read__(addr, mem= mem))
 				case OP_CODES.STA_ZP:
+					# Store the value of the acummulator into the zero page address in memory
 					addr = zero_page(cpu=self, mem=mem)
 					self.__write__(self.A, address=addr, mem=mem)
 				case OP_CODES.STA_ZP_IDX:
+					# Store the value of the accumulator into the zero page address indexed by the X register in memory
 					addr = zero_page(cpu=self, mem=mem, offset=self.X)
-					print(f"Stored address - {addr}")
 					self.__write__(self.A, address=addr, mem=mem)
 				case OP_CODES.STA_ABS:
+					# Store the value of the accumulator into the absolute address in memory
 					addr = absolute(cpu=self, mem=mem)
 					self.__write__(self.A, address=addr, mem=mem)
 				case OP_CODES.STA_ABS_IDX_X:
+					# Store the value of the accumulator into the absolute address indexed by the X register in memory
 					addr = absolute(cpu=self, mem=mem, offset=self.X)
 					self.__write__(self.A, address=addr, mem=mem)
 				case OP_CODES.STA_ABS_IDX_Y:
+					# Store the value of the accumulator into the absolute address indexed by the Y register in memory
 					addr = absolute(cpu=self, mem=mem, offset=self.Y)
 					self.__write__(self.A, address=addr, mem=mem)
 				case OP_CODES.STX_ZP:
+					# Store the value of the X register in the zero paged address in memory
 					addr = zero_page(cpu=self, mem=mem)
 					self.__write__(self.X, address=addr, mem=mem)
 				case OP_CODES.STX_ZP_IDX:
+					# Store the value of the X register in the zero paged address indexed by the Y register in memory
 					addr = zero_page(cpu=self, mem=mem, offset=self.Y)
 					self.__write__(self.X, address=addr, mem=mem)
 				case OP_CODES.STX_ABS:
+					# Store the value of the X register into the absolute address in memory
 					addr = absolute(cpu=self, mem=mem)
 					self.__write__(self.X, address=addr, mem=mem)
 				case OP_CODES.STY_ZP:
+					# Store the value of the Y register into the zero paged address in memory
 					addr = zero_page(cpu=self, mem=mem)
 					self.__write__(self.Y, address=addr, mem=mem)
 				case OP_CODES.STY_ZP_IDX:
+					# Store the value of the Y register into the zero paged address indexed by the X register in memory
 					addr = zero_page(cpu=self, mem=mem, offset=self.X)
 					self.__write__(self.Y, address=addr, mem=mem)
 				case OP_CODES.STY_ABS:
+					# Store the value of the Y register into the aboslute address in memory
 					addr = absolute(cpu=self, mem=mem)
 					self.__write__(self.Y, address=addr, mem=mem)
 				case _:
+					# Any unknown or unhanded opcodes that the unit runs into
 					print(f"Unknown opcode - {hex(op_code)}")
